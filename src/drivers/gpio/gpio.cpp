@@ -1,35 +1,27 @@
 #include "gpio.h"
-#include "utils.h"
+#include "../../common/gpio/gpio_utils.h"
 
-void gpio_init(GPIO_TypeDef* port, uint8_t pin)
+static inline void gpio_enable_clk(GPIO_TypeDef* port)
 {
-    if (port == GPIOA) 
-    {
-        RCC->AHB4ENR |= RCC_AHB4ENR_GPIOAEN;
-    }
-    else if (port == GPIOB) 
-    {
-        RCC->AHB4ENR |= RCC_AHB4ENR_GPIOBEN;
-    }
-    else if (port == GPIOC)
-    {
-        RCC->AHB4ENR |= RCC_AHB4ENR_GPIOCEN;
-    }
+    if (port == GPIOA) { RCC->AHB4ENR |= RCC_AHB4ENR_GPIOAEN; }
+    else if (port == GPIOB) { RCC->AHB4ENR |= RCC_AHB4ENR_GPIOBEN; }
+    else if (port == GPIOC) { RCC->AHB4ENR |= RCC_AHB4ENR_GPIOCEN; }
+}
 
-    // Set pin as output
-    port->MODER &= ~(0x3 << (pin * 2));
-    port->MODER |=  (0x1 << (pin * 2));
+void gpio_init(GPIO_TypeDef* port, uint8_t pin, gpio_mode mode)
+{
+    gpio_enable_clk(port);
+    GPIO_SET_MODE(port, pin, mode);
 }
 
 void gpio_write(GPIO_TypeDef* port, uint16_t pin, uint8_t value)
 {
-    uint32_t pin_mask = PIN_MASK(pin);
-    port->BSRR = (value) ? pin_mask : (pin_mask << 16U);
+    port->BSRR = (value) ? PIN_MASK(pin) : PIN_RESET_MASK(pin);
 }
 
 void gpio_clear(GPIO_TypeDef* port, uint16_t pin)
 {
-    port->BSRR = PIN_MASK(pin) << 16U;
+    port->BSRR = PIN_RESET_MASK(pin);
 }
 
 uint8_t gpio_read(GPIO_TypeDef* port, uint16_t pin)
