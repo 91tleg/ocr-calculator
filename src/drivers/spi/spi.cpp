@@ -2,38 +2,30 @@
 #include "../gpio/gpio.h"
 #include "stm32h7xx.h"
 #include "../boards/board.h"
+#include "../../common/gpio/gpio_utils.h"
 
 static void spi_gpio_init(void)
 {
     // Enable GPIOA clock
-    gpio_init(SPI_SCK_PORT, SPI_SCK_PIN);
-    gpio_init(SPI_MOSI_PORT, SPI_MOSI_PIN);
-    gpio_init(SPI_MISO_PORT, SPI_MISO_PIN);
+    gpio_init(SPI_SCK_PORT, SPI_SCK_PIN, GPIO_MODE_AF);
+    gpio_init(SPI_MOSI_PORT, SPI_MOSI_PIN, GPIO_MODE_AF);
+    gpio_init(SPI_MISO_PORT, SPI_MISO_PIN, GPIO_MODE_AF);
 
     // SCK
-    SPI_SCK_PORT->MODER   &= ~(3U << (SPI_SCK_PIN * 2));
-    SPI_SCK_PORT->MODER   |=  (2U << (SPI_SCK_PIN * 2)); // AF
-    SPI_SCK_PORT->OSPEEDR |=  (3U << (SPI_SCK_PIN * 2));
-    SPI_SCK_PORT->OTYPER  &= ~(1U << SPI_SCK_PIN);
-    SPI_SCK_PORT->PUPDR   &= ~(3U << (SPI_SCK_PIN * 2));
-    SPI_SCK_PORT->AFR[0]  &= ~(0xFU << (SPI_SCK_PIN * 4));
-    SPI_SCK_PORT->AFR[0]  |=  (SPI_AF << (SPI_SCK_PIN * 4));
+    GPIO_SET_SPEED_HIGH(SPI_SCK_PORT, SPI_SCK_PIN);
+    GPIO_SET_OTYPE_PP(SPI_SCK_PORT, SPI_SCK_PIN);
+    GPIO_SET_PUPD_NONE(SPI_SCK_PORT, SPI_SCK_PIN);
+    GPIO_SET_AF(SPI_SCK_PORT, SPI_SCK_PIN, SPI_AF);
 
     // MOSI
-    SPI_MOSI_PORT->MODER   &= ~(3U << (SPI_MOSI_PIN * 2));
-    SPI_MOSI_PORT->MODER   |=  (2U << (SPI_MOSI_PIN * 2)); 
-    SPI_MOSI_PORT->OSPEEDR |=  (3U << (SPI_MOSI_PIN * 2));
-    SPI_MOSI_PORT->OTYPER  &= ~(1U << SPI_MOSI_PIN);
-    SPI_MOSI_PORT->PUPDR   &= ~(3U << (SPI_MOSI_PIN * 2));
-    SPI_MOSI_PORT->AFR[0]  &= ~(0xFU << (SPI_MOSI_PIN * 4));
-    SPI_MOSI_PORT->AFR[0]  |=  (SPI_AF << (SPI_MOSI_PIN * 4));
+    GPIO_SET_SPEED_HIGH(SPI_MOSI_PORT, SPI_MOSI_PIN);
+    GPIO_SET_OTYPE_PP(SPI_MOSI_PORT, SPI_MOSI_PIN);
+    GPIO_SET_PUPD_NONE(SPI_MOSI_PORT, SPI_MOSI_PIN);
+    GPIO_SET_AF(SPI_MOSI_PORT, SPI_MOSI_PIN, SPI_AF);
 
-    // MISO (optional, if needed)
-    SPI_MISO_PORT->MODER   &= ~(3U << (SPI_MISO_PIN * 2));
-    SPI_MISO_PORT->MODER   |=  (2U << (SPI_MISO_PIN * 2));
-    SPI_MISO_PORT->PUPDR   &= ~(3U << (SPI_MISO_PIN * 2));
-    SPI_MISO_PORT->AFR[0]  &= ~(0xFU << (SPI_MISO_PIN * 4));
-    SPI_MISO_PORT->AFR[0]  |=  (SPI_AF << (SPI_MISO_PIN * 4));
+    // MISO
+    GPIO_SET_PUPD_NONE(SPI_MISO_PORT, SPI_MISO_PIN);
+    GPIO_SET_AF(SPI_MISO_PORT, SPI_MISO_PIN, SPI_AF);
 }
 
 static int spi_wait_flag(uint32_t flag, uint32_t value)
@@ -74,7 +66,7 @@ void spi_init(void)
     SPI_INSTANCE->CR1 |= SPI_CR1_SPE;
 }
 
-uint8_t spi_write(uint8_t data)
+int8_t spi_write(uint8_t data)
 {
     if (spi_wait_flag(SPI_SR_TXP, 1) < 0) { return -1; }
     *((__IO uint8_t *)&SPI_INSTANCE->TXDR) = data;
@@ -84,7 +76,7 @@ uint8_t spi_write(uint8_t data)
     return 0;
 }
 
-uint8_t spi_write_buffer(const uint8_t *buf, uint32_t len)
+int8_t spi_write_buffer(const uint8_t *buf, uint32_t len)
 {
     if (!buf) { return -1; }
 

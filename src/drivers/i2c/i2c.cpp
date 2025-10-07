@@ -2,23 +2,24 @@
 #include "../gpio/gpio.h"
 #include "stm32h7xx.h"
 #include "../boards/board.h"
+#include "../../common/gpio/gpio_utils.h"
 
 static void i2c_gpio_init(void)
 {
-    gpio_init(I2C_SCL_PORT, I2C_SCL_PIN);
-    gpio_init(I2C_SDA_PORT, I2C_SDA_PIN);
+    gpio_init(I2C_SCL_PORT, I2C_SCL_PIN, GPIO_MODE_AF);
+    gpio_init(I2C_SDA_PORT, I2C_SDA_PIN, GPIO_MODE_AF);
 
-    I2C_SCL_PORT->MODER   &= ~(3U << (I2C_SCL_PIN * 2));
-    I2C_SCL_PORT->MODER   |=  (2U << (I2C_SCL_PIN * 2));
-    I2C_SCL_PORT->OTYPER  |=  (1U << I2C_SCL_PIN);
-    I2C_SCL_PORT->OSPEEDR |=  (3U << (I2C_SCL_PIN * 2));
-    I2C_SCL_PORT->AFR[1]  |=  (I2C_AF << ((I2C_SCL_PIN - 8) * 4));
+    // SCL
+    GPIO_SET_OTYPE_OD(I2C_SCL_PORT, I2C_SCL_PIN);
+    GPIO_SET_SPEED_HIGH(I2C_SCL_PORT, I2C_SCL_PIN);
+    GPIO_SET_PUPD_NONE(I2C_SCL_PORT, I2C_SCL_PIN);
+    GPIO_SET_AF(I2C_SCL_PORT, I2C_SCL_PIN, I2C_AF);
 
-    I2C_SDA_PORT->MODER   &= ~(3U << (I2C_SDA_PIN * 2));
-    I2C_SDA_PORT->MODER   |=  (2U << (I2C_SDA_PIN * 2));
-    I2C_SDA_PORT->OTYPER  |=  (1U << I2C_SDA_PIN);
-    I2C_SDA_PORT->OSPEEDR |=  (3U << (I2C_SDA_PIN * 2));
-    I2C_SDA_PORT->AFR[1]  |=  (I2C_AF << ((I2C_SDA_PIN - 8) * 4));
+    // SDA
+    GPIO_SET_OTYPE_OD(I2C_SDA_PORT, I2C_SDA_PIN);
+    GPIO_SET_SPEED_HIGH(I2C_SDA_PORT, I2C_SDA_PIN);
+    GPIO_SET_PUPD_NONE(I2C_SDA_PORT, I2C_SDA_PIN);
+    GPIO_SET_AF(I2C_SDA_PORT, I2C_SDA_PIN, I2C_AF);
 }
 
 static int8_t i2c_wait_flag(uint32_t flag, uint32_t value)
