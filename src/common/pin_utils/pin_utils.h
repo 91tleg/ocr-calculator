@@ -1,52 +1,76 @@
-#ifndef GPIO_UTILS_H
-#define GPIO_UTILS_H
+#ifndef PIN_UTILS_H
+#define PIN_UTILS_H 
 
 #include <cstdint>
+#include "stm32h7xx.h"
 
-constexpr uint32_t PIN_MASK(uint16_t pin)
+namespace pin_utils
 {
-    return static_cast<uint32_t>(1U << pin);
+
+enum class gpio_mode : uint8_t {
+    input  = 0U,
+    output = 1U,
+    alt_fn = 2U,
+    analog = 3U
+};
+
+constexpr uint32_t pin_mask(uint16_t pin) {
+    return 1UL << pin;
 }
 
-constexpr uint32_t PIN_RESET_MASK(uint16_t pin)
-{
-    return PIN_MASK(pin) << 16U;
+constexpr uint32_t pin_reset_mask(uint16_t pin) {
+    return 1UL << (pin + 16U);
 }
 
-#define GPIO_SET_MODE(port, pin, mode)              \
-    do {                                            \
-        (port)->MODER &= ~(3U << ((pin) * 2));      \
-        (port)->MODER |=  ((mode) << ((pin) * 2));  \
-    } while (0)
+inline void write(GPIO_TypeDef* port, uint8_t pin, bool high) {
+    port->BSRR = high ? pin_mask(pin) : pin_reset_mask(pin);
+}
 
-#define GPIO_SET_AF(port, pin, af)                                  \
-    do {                                                            \
-        (port)->AFR[((pin) >> 3)] &= ~(0xFU << (((pin) & 7U) * 4)); \
-        (port)->AFR[((pin) >> 3)] |=  ((af) << (((pin) & 7U) * 4)); \
-    } while (0)
+inline void set_mode(GPIO_TypeDef* port, uint8_t pin, gpio_mode mode) {
+    port->MODER = (port->MODER & ~(3UL << (pin * 2U))) |
+                  ((static_cast<uint8_t>(mode) & 3U) << (pin * 2U));
+}
 
-#define GPIO_SET_OTYPE_OD(port, pin)  \
-    ((port)->OTYPER |= (1U << (pin)))
+inline void set_alternate_function(GPIO_TypeDef* port, uint8_t pin, uint8_t af) {
+    const uint8_t index = pin >> 3U;
+    const uint8_t shift = (pin & 7U) * 4U;
+    port->AFR[index] = (port->AFR[index] & ~(0xFUL << shift)) |
+                       ((af & 0xFUL) << shift);
+}
 
-#define GPIO_SET_OTYPE_PP(port, pin)      \
-    ( (port)->OTYPER &= ~(1U << (pin)) )
+inline void set_output_open_drain(GPIO_TypeDef* port, uint8_t pin) {
+    port->OTYPER |= (1UL << pin);
+}
 
-#define GPIO_SET_PUPD_NONE(port, pin)           \
-    ( (port)->PUPDR  &= ~(3U << ((pin) * 2)) )
+inline void set_output_push_pull(GPIO_TypeDef* port, uint8_t pin) {
+    port->OTYPER &= ~(1UL << pin);
+}
 
-#define GPIO_SET_PUPD_UP(port, pin)             \
-    do {                                        \
-        (port)->PUPDR &= ~(3U << ((pin) * 2));  \
-        (port)->PUPDR |=  (1U << ((pin) * 2));  \
-    } while (0)
+inline void set_pupd_none(GPIO_TypeDef* port, uint8_t pin) {
+    port->PUPDR &= ~(3UL << (pin * 2U));
+}
 
-#define GPIO_SET_PUPD_DOWN(port, pin)           \
-    do {                                        \
-        (port)->PUPDR &= ~(3U << ((pin) * 2));  \
-        (port)->PUPDR |=  (2U << ((pin) * 2));  \
-    } while (0)
+inline void set_pupd_up(GPIO_TypeDef* port, uint8_t pin) {
+    port->PUPDR = (port->PUPDR & ~(3UL << (pin * 2U))) |
+                  (1UL << (pin * 2U));
+}
 
-#define GPIO_SET_SPEED_HIGH(port, pin)          \
-    ( (port)->OSPEEDR |= (3U << ((pin) * 2)) )
+inline void set_pupd_down(GPIO_TypeDef* port, uint8_t pin) {
+    port->PUPDR = (port->PUPDR & ~(3UL << (pin * 2U))) |
+                  (2UL << (pin * 2U));
+}
 
-#endif // GPIO_UTILS_H
+inline void set_speed_high(GPIO_TypeDef* port, uint8_t pin) {
+    port->OSPEEDR |= (3UL << (pin * 2U));
+}
+
+inline void enable_clock(GPIO_TypeDef* port) {
+    if (port == GPIOA) RCC->AHB4ENR |= RCC_AHB4ENR_GPIOAEN;
+    else if (port == GPIOB) RCC->AHB4ENR |= RCC_AHB4ENR_GPIOBEN;
+    else if (port == GPIOC) RCC->AHB4ENR |= RCC_AHB4ENR_GPIOCEN;
+    __DSB();
+}
+
+} // namespace pin_utils
+
+#endif // PIN_UTILS_H
