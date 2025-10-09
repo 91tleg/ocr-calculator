@@ -4,17 +4,23 @@
 #include <cstdint>
 #include "stm32h7xx.h"
 
-enum gpio_mode : uint8_t
-{
-    GPIO_MODE_IN = 0U,
-    GPIO_MODE_OUT = 1U,
-    GPIO_MODE_AF = 2U,
-    GPIO_MODE_ANA = 3U
+namespace drv {
+
+class gpio {
+public:
+    gpio(GPIO_TypeDef* port, uint8_t pin);
+    void init(pin_utils::gpio_mode mode) const;
+    void set()   const;
+    void clear() const;
+    bool read()  const;
+    GPIO_TypeDef* port() const;
+    uint8_t pin() const;
+
+private:
+    GPIO_TypeDef* const _port;
+    const uint8_t _pin;
 };
 
-void gpio_init(GPIO_TypeDef *port, uint8_t pin, gpio_mode mode);
-void gpio_write(GPIO_TypeDef *port, uint16_t pin, uint8_t value);
-void gpio_clear(GPIO_TypeDef *port, uint16_t pin);
-uint8_t gpio_read(GPIO_TypeDef *port, uint16_t pin);
+} // namespace drv
 
 #endif // GPIO_H
