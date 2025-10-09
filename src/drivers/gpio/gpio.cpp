@@ -1,30 +1,42 @@
 #include "gpio.h"
-#include "../../common/gpio/gpio_utils.h"
+#include "../../common/pin_utils/pin_utils.h"
 
-static inline void gpio_enable_clk(GPIO_TypeDef* port)
+namespace drv {
+
+gpio::gpio(GPIO_TypeDef* port, uint8_t pin)
+    : _port(port), _pin(pin)
 {
-    if (port == GPIOA) { RCC->AHB4ENR |= RCC_AHB4ENR_GPIOAEN; }
-    else if (port == GPIOB) { RCC->AHB4ENR |= RCC_AHB4ENR_GPIOBEN; }
-    else if (port == GPIOC) { RCC->AHB4ENR |= RCC_AHB4ENR_GPIOCEN; }
+    pin_utils::enable_clock(_port);
 }
 
-void gpio_init(GPIO_TypeDef* port, uint8_t pin, gpio_mode mode)
+void gpio::init(pin_utils::gpio_mode mode) const
 {
-    gpio_enable_clk(port);
-    GPIO_SET_MODE(port, pin, mode);
+    pin_utils::set_mode(_port, _pin, mode);
 }
 
-void gpio_write(GPIO_TypeDef* port, uint16_t pin, uint8_t value)
+void gpio::set() const
 {
-    port->BSRR = (value) ? PIN_MASK(pin) : PIN_RESET_MASK(pin);
+    pin_utils::write(_port, _pin, true);
 }
 
-void gpio_clear(GPIO_TypeDef* port, uint16_t pin)
+void gpio::clear() const
 {
-    port->BSRR = PIN_RESET_MASK(pin);
+    pin_utils::write(_port, _pin, false);
 }
 
-uint8_t gpio_read(GPIO_TypeDef* port, uint16_t pin)
+bool gpio::read() const
 {
-    return (port->IDR & PIN_MASK(pin)) ? 1 : 0;
+    return (_port->IDR & pin_utils::pin_mask(_pin)) != 0U;
 }
+
+GPIO_TypeDef* gpio::port() const
+{
+    return _port;
+}
+
+uint8_t gpio::pin() const
+{
+    return _pin;
+}
+
+} // namespace drv
