@@ -3,16 +3,10 @@
 
 #include <cstdint>
 #include "stm32h7xx.h"
+#include "../gpio_types/gpio_types.h"
 
 namespace pin_utils
 {
-
-enum class gpio_mode : uint8_t {
-    input  = 0U,
-    output = 1U,
-    alt_fn = 2U,
-    analog = 3U
-};
 
 constexpr uint32_t pin_mask(uint16_t pin) {
     return 1UL << pin;
@@ -26,7 +20,7 @@ inline void write(GPIO_TypeDef* port, uint8_t pin, bool high) {
     port->BSRR = high ? pin_mask(pin) : pin_reset_mask(pin);
 }
 
-inline void set_mode(GPIO_TypeDef* port, uint8_t pin, gpio_mode mode) {
+inline void set_mode(GPIO_TypeDef* port, uint8_t pin, drv::gpio_mode mode) {
     port->MODER = (port->MODER & ~(3UL << (pin * 2U))) |
                   ((static_cast<uint8_t>(mode) & 3U) << (pin * 2U));
 }
@@ -65,9 +59,9 @@ inline void set_speed_high(GPIO_TypeDef* port, uint8_t pin) {
 }
 
 inline void enable_clock(GPIO_TypeDef* port) {
-    if (port == GPIOA) RCC->AHB4ENR |= RCC_AHB4ENR_GPIOAEN;
-    else if (port == GPIOB) RCC->AHB4ENR |= RCC_AHB4ENR_GPIOBEN;
-    else if (port == GPIOC) RCC->AHB4ENR |= RCC_AHB4ENR_GPIOCEN;
+    if (port == GPIOA) { RCC->AHB4ENR |= RCC_AHB4ENR_GPIOAEN; }
+    else if (port == GPIOB) { RCC->AHB4ENR |= RCC_AHB4ENR_GPIOBEN; }
+    else if (port == GPIOC) { RCC->AHB4ENR |= RCC_AHB4ENR_GPIOCEN; }
     __DSB();
 }
 
