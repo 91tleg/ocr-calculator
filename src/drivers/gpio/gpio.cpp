@@ -3,40 +3,37 @@
 
 namespace drv {
 
-gpio::gpio(GPIO_TypeDef* port, uint8_t pin)
-    : _port(port), _pin(pin)
+gpio::gpio(gpio_config_t& config) : _config(config) {}
+
+void gpio::init(gpio_mode mode)
 {
-    pin_utils::enable_clock(_port);
+    pin_utils::enable_clock(_config.port);
+    pin_utils::set_mode(_config.port, _config.pin, mode);
 }
 
-void gpio::init(pin_utils::gpio_mode mode) const
+void gpio::set()
 {
-    pin_utils::set_mode(_port, _pin, mode);
+    pin_utils::write(_config.port, _config.pin, true);
 }
 
-void gpio::set() const
+void gpio::clear()
 {
-    pin_utils::write(_port, _pin, true);
-}
-
-void gpio::clear() const
-{
-    pin_utils::write(_port, _pin, false);
+    pin_utils::write(_config.port, _config.pin, false);
 }
 
 bool gpio::read() const
 {
-    return (_port->IDR & pin_utils::pin_mask(_pin)) != 0U;
+    return (_config.port->IDR & pin_utils::pin_mask(_config.pin)) != 0UL;
 }
 
 GPIO_TypeDef* gpio::port() const
 {
-    return _port;
+    return _config.port;
 }
 
 uint8_t gpio::pin() const
 {
-    return _pin;
+    return _config.pin;
 }
 
 } // namespace drv
