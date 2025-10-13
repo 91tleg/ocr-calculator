@@ -1,101 +1,98 @@
 #include "spi.h"
 #include "../../common/pin_utils/pin_utils.h"
+#include "../../common/gpio_types/gpio_types.h"
+#include "../../common/log/log.h"
 
 namespace drv {
 
-spi::spi(GPIO_TypeDef* sck_port, uint8_t sck_pin,
-         GPIO_TypeDef* mosi_port, uint8_t mosi_pin,
-         GPIO_TypeDef* miso_port, uint8_t miso_pin,
-         SPI_TypeDef* instance, uint8_t af)
-    : _sck_port(sck_port), _sck_pin(sck_pin),
-      _mosi_port(mosi_port), _mosi_pin(mosi_pin),
-      _miso_port(miso_port), _miso_pin(miso_pin),
-      _instance(instance), _af(af)
-{}
+spi::spi(spi_config_t& config) : _config(config) {}
 
-void spi::init_gpio() const
+void spi::init_gpio()
 {
-    pin_utils::enable_clock(_sck_port);
-    pin_utils::enable_clock(_mosi_port);
-    pin_utils::enable_clock(_miso_port);
+    pin_utils::enable_clock(_config.sck_port);
+    pin_utils::enable_clock(_config.mosi_port);
 
     // SCK
-    pin_utils::set_mode(_sck_port, _sck_pin, pin_utils::gpio_mode::alt_fn);
-    pin_utils::set_alternate_function(_sck_port, _sck_pin, _af);
-    pin_utils::set_output_push_pull(_sck_port, _sck_pin);
-    pin_utils::set_speed_high(_sck_port, _sck_pin);
-    pin_utils::set_pupd_none(_sck_port, _sck_pin);
+    pin_utils::set_mode(_config.sck_port, _config.sck_pin, gpio_mode::alt_fn);
+    pin_utils::set_alternate_function(_config.sck_port, _config.sck_pin, _config.af);
+    pin_utils::set_output_push_pull(_config.sck_port, _config.sck_pin);
+    pin_utils::set_speed_high(_config.sck_port, _config.sck_pin);
+    pin_utils::set_pupd_none(_config.sck_port, _config.sck_pin);
 
     // MOSI
-    pin_utils::set_mode(_mosi_port, _mosi_pin, pin_utils::gpio_mode::alt_fn);
-    pin_utils::set_alternate_function(_mosi_port, _mosi_pin, _af);
-    pin_utils::set_output_push_pull(_mosi_port, _mosi_pin);
-    pin_utils::set_speed_high(_mosi_port, _mosi_pin);
-    pin_utils::set_pupd_none(_mosi_port, _mosi_pin);
-
-    // MISO
-    pin_utils::set_mode(_miso_port, _miso_pin, pin_utils::gpio_mode::alt_fn);
-    pin_utils::set_alternate_function(_miso_port, _miso_pin, _af);
-    pin_utils::set_pupd_none(_miso_port, _miso_pin);
+    pin_utils::set_mode(_config.mosi_port, _config.mosi_pin, gpio_mode::alt_fn);
+    pin_utils::set_alternate_function(_config.mosi_port, _config.mosi_pin, _config.af);
+    pin_utils::set_output_push_pull(_config.mosi_port, _config.mosi_pin);
+    pin_utils::set_speed_high(_config.mosi_port, _config.mosi_pin);
+    pin_utils::set_pupd_none(_config.mosi_port, _config.mosi_pin);
 }
 
 void spi::init()
 {
     init_gpio();
 
-    // Enable SPI1 clock
-    if (_instance == SPI1) { RCC->APB2ENR |= RCC_APB2ENR_SPI1EN; }
-    else if (_instance == SPI2) { RCC->APB1LENR |= RCC_APB1LENR_SPI2EN; }
-    // Add more SPI instances if needed
-
-    // Reset SPI
-    if (_instance == SPI1) {
+    if (_config.instance == SPI1) {
+        RCC->APB2ENR |= RCC_APB2ENR_SPI1EN; 
         RCC->APB2RSTR |= RCC_APB2RSTR_SPI1RST;
         RCC->APB2RSTR &= ~RCC_APB2RSTR_SPI1RST;
     }
+    else if (_config.instance == SPI2) {
+        RCC->APB1LENR |= RCC_APB1LENR_SPI2EN; 
+        RCC->APB1LRSTR |= RCC_APB1LRSTR_SPI2RST;
+        RCC->APB1LRSTR &= ~RCC_APB1LRSTR_SPI2RST;
+    }
 
     // Disable SPI
-    _instance->CR1 &= ~SPI_CR1_SPE;
+    _config.instance->CR1 &= ~SPI_CR1_SPE;
 
-    _instance->CFG1 =
+    _config.instance->CFG1 =
         (3U << SPI_CFG1_MBR_Pos) |   // Baud / 8
         (7U << SPI_CFG1_DSIZE_Pos);  // 8-bit
 
-    _instance->CFG2 =
+    _config.instance->CFG2 =
         SPI_CFG2_MASTER |
         SPI_CFG2_COMM_0 |            // Full duplex
         SPI_CFG2_MSSI;               // Internal SS
 
     // Enable SPI
-    _instance->CR1 |= SPI_CR1_SPE;
+    _config.instance->CR1 |= SPI_CR1_SPE;
 }
 
-int8_t spi::wait_flag(uint32_t flag, uint32_t value) const
+spi::spi_status_t spi::wait_flag(uint32_t flag, uint32_t value) const
 {
     uint16_t timeout = _timeout;
-    while (((_instance->SR & flag) ? 1U : 0U) != value) {
-        if (--timeout == 0) { return -1; }
+    while (((_config.instance->SR & flag) ? 1UL : 0UL) != value) {
+        if (--timeout == 0U) { return spi_status_t::timeout; }
     }
-    return 0;
+    return spi_status_t::ok;
 }
 
-int8_t spi::write(uint8_t data)
+spi::spi_status_t spi::write(uint8_t data)
 {
-    if (wait_flag(SPI_SR_TXP, 1) < 0) { return -1; }
-    *reinterpret_cast<volatile uint8_t*>(&_instance->TXDR) = data;
+    if (static_cast<int8_t>(wait_flag(SPI_SR_TXP, 1UL)) < 0) { goto timeout; }
+    *reinterpret_cast<volatile uint8_t*>(&_config.instance->TXDR) = data;
 
-    if (wait_flag(SPI_SR_EOT, 1) < 0) { return -1; }
-    _instance->IFCR = SPI_IFCR_EOTC;
-    return 0;
+    if (static_cast<int8_t>(wait_flag(SPI_SR_EOT, 1UL)) < 0) { goto timeout; }
+    _config.instance->IFCR = SPI_IFCR_EOTC;
+    return spi_status_t::ok;
+
+timeout:
+    sys::log::error("SPI timeout");
+    return spi_status_t::timeout;
 }
 
-int8_t spi::write_buffer(const uint8_t* buf, uint32_t len)
+spi::spi_status_t spi::write_buffer(const uint8_t* buf, uint32_t len)
 {
-    if (!buf) { return -1; }
-    for (uint32_t i = 0; i < len; ++i) {
-        if (write(buf[i]) < 0) { return -1; }
+    if (!buf) {
+        sys::log::error("SPI error: no buffer");
+        return spi_status_t::error; 
     }
-    return 0;
+    for (uint32_t i = 0UL; i < len; ++i) {
+        if (static_cast<int8_t>(write(buf[i])) < 0) {
+            return  spi_status_t::timeout;
+        }
+    }
+    return spi_status_t::ok;
 }
 
 } // namespace drv

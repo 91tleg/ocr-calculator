@@ -3,32 +3,25 @@
 
 #include <cstdint>
 #include "stm32h7xx.h"
+#include "spi_config.h"
+#include "../../common/status/status.h"
 
 namespace drv {
 
 class spi {
 public:
-    spi(GPIO_TypeDef* sck_port, uint8_t sck_pin,
-        GPIO_TypeDef* mosi_port, uint8_t mosi_pin,
-        GPIO_TypeDef* miso_port, uint8_t miso_pin,
-        SPI_TypeDef* instance, uint8_t af);
+    using spi_status_t = drv::status_t;
+    explicit spi(spi_config_t& config);
     void init();
-    int8_t write(uint8_t data);
-    int8_t write_buffer(const uint8_t* buf, uint32_t len);
+    spi_status_t write(uint8_t data);
+    spi_status_t write_buffer(const uint8_t* buf, uint32_t len);
 
 private:
-    GPIO_TypeDef* const _sck_port;
-    const uint8_t _sck_pin;
-    GPIO_TypeDef* const _mosi_port;
-    const uint8_t _mosi_pin;
-    GPIO_TypeDef* const _miso_port;
-    const uint8_t _miso_pin;
-    SPI_TypeDef* const _instance;
-    const uint8_t _af;
+    spi_config_t _config;
     static constexpr uint16_t _timeout = 1000U;
 
-    void init_gpio() const;
-    int8_t wait_flag(uint32_t flag, uint32_t value) const;
+    void init_gpio();
+    spi_status_t wait_flag(uint32_t flag, uint32_t value) const;
 };
 
 } // namespace drv

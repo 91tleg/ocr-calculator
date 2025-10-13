@@ -3,29 +3,25 @@
 
 #include <cstdint>
 #include "stm32h7xx.h"
+#include "i2c_config.h"
+#include "../../common/status/status.h"
 
 namespace drv {
 
 class i2c {
 public:
-    i2c(GPIO_TypeDef* scl_port, uint8_t scl_pin,
-        GPIO_TypeDef* sda_port, uint8_t sda_pin,
-        I2C_TypeDef* instance, uint8_t af);
+    using i2c_status_t = drv::status_t;
+    explicit i2c(i2c_config_t& config);
     void init();
-    int8_t write_byte(uint8_t dev_addr, uint8_t reg_addr, uint8_t data);
-    int8_t read_byte(uint8_t dev_addr, uint8_t reg_addr, uint8_t* data);
+    i2c_status_t write_byte(uint8_t dev_addr, uint8_t reg_addr, uint8_t data);
+    i2c_status_t read_byte(uint8_t dev_addr, uint8_t reg_addr, uint8_t* data);
 
 private:
-    GPIO_TypeDef* const _scl_port;
-    const uint8_t _scl_pin;
-    GPIO_TypeDef* const _sda_port;
-    const uint8_t _sda_pin;
-    I2C_TypeDef* const _instance;
-    uint8_t _af;
+    i2c_config_t _config;
     static constexpr uint16_t _timeout = 1000U;
 
     void init_gpio();
-    int8_t wait_flag(uint32_t flag, uint32_t value);
+    i2c_status_t wait_flag(uint32_t flag, uint32_t value);
 };
 
 } // namespace drv

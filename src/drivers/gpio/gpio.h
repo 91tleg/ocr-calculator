@@ -3,22 +3,23 @@
 
 #include <cstdint>
 #include "stm32h7xx.h"
+#include "../../common/gpio_types/gpio_types.h"
+#include "gpio_config.h"
 
 namespace drv {
 
 class gpio {
 public:
-    gpio(GPIO_TypeDef* port, uint8_t pin);
-    void init(pin_utils::gpio_mode mode) const;
-    void set()   const;
-    void clear() const;
+    explicit gpio(gpio_config_t& config);
+    void init(gpio_mode mode);
+    void set();
+    void clear();
     bool read()  const;
     GPIO_TypeDef* port() const;
     uint8_t pin() const;
 
 private:
-    GPIO_TypeDef* const _port;
-    const uint8_t _pin;
+    gpio_config_t _config;
 };
 
 } // namespace drv
