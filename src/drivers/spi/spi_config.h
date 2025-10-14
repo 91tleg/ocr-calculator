@@ -3,14 +3,14 @@
 
 #include <cstdint>
 #include "stm32h7xx.h"
+#include "../gpio/gpio_base.h"
 
 namespace drv {
 
-struct spi_config_t {
-    GPIO_TypeDef* sck_port;
-    uint8_t sck_pin;
-    GPIO_TypeDef* mosi_port;
-    uint8_t mosi_pin;
+struct spi_config_t
+{
+    gpio_base& sck;
+    gpio_base& mosi;
     SPI_TypeDef* instance;
     uint8_t af;
 };

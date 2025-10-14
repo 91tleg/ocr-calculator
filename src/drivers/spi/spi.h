@@ -2,19 +2,35 @@
 #define SPI_H
 
 #include <cstdint>
-#include "stm32h7xx.h"
 #include "spi_config.h"
-#include "../../common/status/status.h"
+#include "spi_base.h"
 
 namespace drv {
 
-class spi {
+class spi : public spi_base
+{
 public:
-    using spi_status_t = drv::status_t;
+    /**
+     * @brief Constructor
+     * 
+     * @param config SPI config struct
+     */
     explicit spi(spi_config_t& config);
-    void init();
-    spi_status_t write(uint8_t data);
-    spi_status_t write_buffer(const uint8_t* buf, uint32_t len);
+
+    /**
+     * @brief Initializes the SPI according to the config
+     */
+    void init() override;
+
+    /**
+     * @brief Writes a single byte over SPI
+     */
+    spi_status_t write(uint8_t data) override;
+
+    /**
+     * @brief Writes a buffer of bytes over SPI
+     */
+    spi_status_t write_buffer(const uint8_t* buf, uint32_t len) override;
 
 private:
     spi_config_t _config;

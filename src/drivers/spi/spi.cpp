@@ -1,6 +1,4 @@
 #include "spi.h"
-#include "../../common/pin_utils/pin_utils.h"
-#include "../../common/gpio_types/gpio_types.h"
 #include "../../common/log/log.h"
 
 namespace drv {
@@ -9,22 +7,8 @@ spi::spi(spi_config_t& config) : _config(config) {}
 
 void spi::init_gpio()
 {
-    pin_utils::enable_clock(_config.sck_port);
-    pin_utils::enable_clock(_config.mosi_port);
-
-    // SCK
-    pin_utils::set_mode(_config.sck_port, _config.sck_pin, gpio_mode::alt_fn);
-    pin_utils::set_alternate_function(_config.sck_port, _config.sck_pin, _config.af);
-    pin_utils::set_output_push_pull(_config.sck_port, _config.sck_pin);
-    pin_utils::set_speed_high(_config.sck_port, _config.sck_pin);
-    pin_utils::set_pupd_none(_config.sck_port, _config.sck_pin);
-
-    // MOSI
-    pin_utils::set_mode(_config.mosi_port, _config.mosi_pin, gpio_mode::alt_fn);
-    pin_utils::set_alternate_function(_config.mosi_port, _config.mosi_pin, _config.af);
-    pin_utils::set_output_push_pull(_config.mosi_port, _config.mosi_pin);
-    pin_utils::set_speed_high(_config.mosi_port, _config.mosi_pin);
-    pin_utils::set_pupd_none(_config.mosi_port, _config.mosi_pin);
+    _config.sck.init();
+    _config.mosi.init();
 }
 
 void spi::init()
