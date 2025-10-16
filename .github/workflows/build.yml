@@ -1,0 +1,27 @@
+name: Build firmware 
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v5
+
+    - name: Set up python
+      uses: actions/setup-python@v6
+      with:
+        python-version: '3.11'
+
+    - name: Install platformio
+      run: pip install platformio
+
+    - name: Make script executable
+      run: chmod +x ./scripts/build.sh
+  
+    - name: Run script
+      run: ./scripts/build.sh

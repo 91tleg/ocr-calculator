@@ -1,0 +1,24 @@
+name: Unit Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v5
+        with:
+          submodules: true
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y cmake g++ make
+
+      - name: Make script executable
+        run: chmod +x ./scripts/run_native_tests.sh
+
+      - name: Run script
+        run: ./scripts/run_native_tests.sh
