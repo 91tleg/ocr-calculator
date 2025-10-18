@@ -1,5 +1,5 @@
 #ifndef I2C_BASE_H
-#define II2C_BASE_H
+#define I2C_BASE_H
 
 #include <cstdint>
 #include "../../common/status/status.h"
@@ -18,4 +18,4 @@ public:
 
 } //namespace drv
 
-#endif // II2C_H
+#endif // I2C_H
