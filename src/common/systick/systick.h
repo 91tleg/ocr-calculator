@@ -2,20 +2,21 @@
 #define SYSTICK_H
 
 #include <cstdint>
+#include "systick_base.h"
 
 namespace sys {
 
-class systick
+class systick : public systick_base
 {
 public:
-    static void init(uint32_t tick_hz);
-    static uint32_t millis();
+    void init(uint32_t tick_hz);
+    uint32_t millis() const override;
     static void handler();
-    static void wait_for_tick();
-    static void delay_ms(uint32_t ms);
+    void delay_ms(uint32_t ms) const override;
 
 private:
     static volatile uint32_t _tick_count;
+    static inline void wait_for_tick();
 };
 
 } // namespace sys
