@@ -4,14 +4,13 @@
 #include "ili9341_config.h"
 #include "../display_base.h"
 #include "../../spi/spi_base.h"
-#include "../../../common/systick/systick_base.h"
 
 namespace drv {
 
 class ili9341 : public display_base
 {
 public:
-    explicit ili9341(spi_base& spi, ili9341_config_t& config, sys::systick_base& time);
+    explicit ili9341(spi_base& spi, ili9341_config_t& config);
     void init() override;
     void fill_screen(uint16_t color) override;
     void draw_pixel(uint16_t x, uint16_t y, uint16_t color) override;
@@ -20,7 +19,6 @@ public:
 private:
     spi_base& _spi;
     ili9341_config_t& _config;
-    sys::systick_base& _time;
 
     void gpio_init();
     inline void cs_low();
