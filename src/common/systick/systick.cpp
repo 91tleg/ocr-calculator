@@ -16,7 +16,7 @@ void systick::init(uint32_t tick_hz)
                     SysTick_CTRL_ENABLE_Msk;
 }
 
-uint32_t systick::millis() const
+uint32_t systick::millis()
 {
     return _tick_count;
 }
@@ -31,7 +31,7 @@ void systick::wait_for_tick()
     __asm__ volatile("wfi");
 }
 
-void systick::delay_ms(uint32_t ms) const
+void systick::delay_ms(uint32_t ms)
 {
     const uint32_t start = millis();
     while ((millis() - start) < ms) {
