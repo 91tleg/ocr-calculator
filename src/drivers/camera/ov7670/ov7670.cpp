@@ -1,5 +1,6 @@
 #include "ov7670.h"
-#include "../../../common/log/log.h"
+#include "common/log/log.h"
+#include "common/systick/systick.h"
 
 namespace drv {
 
@@ -45,15 +46,18 @@ namespace ctrl {
     constexpr uint8_t PID_EXPECTED      = 0x76U;
 } // namespace ctrl
 
-ov7670::ov7670(i2c_base& bus, ov7670_config_t& config, sys::systick_base& time)
-    : _bus(bus), _config(config), _time(time) {}
+ov7670::ov7670(i2c_base& bus, ov7670_config_t& config)
+    : _bus(bus), _config(config) {}
 
 void ov7670::init()
 {
+    gpio_init();
+    _bus.init();
+
     _config.reset.clear();
-    _time.delay_ms(config::reset_delay_ms);
+    sys::systick::delay_ms(config::reset_delay_ms);
     _config.reset.set();
-    _time.delay_ms(config::reset_delay_ms);
+    sys::systick::delay_ms(config::reset_delay_ms);
 
     uint8_t pid = 0;
     read_reg(reg::PID, pid);
@@ -63,7 +67,7 @@ void ov7670::init()
     }
 
     write_reg(reg::COM7, ctrl::COM7_RESET);
-    _time.delay_ms(config::reset_delay_ms);
+    sys::systick::delay_ms(config::reset_delay_ms);
     write_reg(reg::COM7, ctrl::COM7_QVGA | ctrl::COM7_Y8);
     write_reg(reg::CLKRC, ctrl::CLK_PRESCALE_DIV2);
 }
@@ -104,6 +108,22 @@ bool ov7670::capture(uint8_t* buffer, uint32_t buf_size)
     }
 
     return true;
+}
+
+void ov7670::gpio_init() 
+{
+    _config.reset.init();
+    _config.vsync.init();
+    _config.href.init();
+    _config.pclk.init();
+    _config.d0.init();
+    _config.d1.init();
+    _config.d2.init();
+    _config.d3.init();
+    _config.d4.init();
+    _config.d5.init();
+    _config.d6.init();
+    _config.d7.init();
 }
 
 uint8_t ov7670::read_data_pins() const

@@ -1,4 +1,5 @@
 #include "ili9341.h"
+#include "common/systick/systick.h"
 
 namespace drv {
 
@@ -35,22 +36,21 @@ namespace madctl {
     constexpr uint8_t ROTATION_270 = MX | MY | MV | BGR;
 } //namespace madctl
 
-ili9341::ili9341(spi_base& spi, ili9341_config_t& config, sys::systick_base& time)
-    : _spi(spi), _config(config), _time(time) {}
+ili9341::ili9341(spi_base& spi, ili9341_config_t& config)
+    : _spi(spi), _config(config) {}
 
 void ili9341::init()
 {
     gpio_init();
     _spi.init();
 
-    // Reset
     rst_low();
-    _time.delay_ms(config::init_delay_ms);
+    sys::systick::delay_ms(config::init_delay_ms);
     rst_high();
-    _time.delay_ms(config::init_delay_ms);
+    sys::systick::delay_ms(config::init_delay_ms);
 
     send_command(cmd::SWRESET);
-    _time.delay_ms(config::reset_delay_ms);
+    sys::systick::delay_ms(config::reset_delay_ms);
 
     send_command(cmd::COLMOD);
     send_data(color_mode::RGB_16BIT);
