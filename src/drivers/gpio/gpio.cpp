@@ -67,9 +67,20 @@ void gpio::set_alternate_function()
 
 void gpio::set_output_type()
 {
-    _config.output_type == gpio_output_type::open_drain
-        ? _config.port->OTYPER |= (1UL << _config.pin)
-        : _config.port->OTYPER &= ~(1UL << _config.pin);
+    switch (_config.output_type) {
+        case gpio_output_type::open_drain:
+            _config.port->OTYPER |= (1UL << _config.pin);
+            break;
+
+        case gpio_output_type::push_pull:
+            _config.port->OTYPER &= ~(1UL << _config.pin);
+            break;
+
+        case gpio_output_type::none:
+        default:
+            // Pin not configured as output
+            break;
+    }
 }
 
 void gpio::set_speed()
@@ -93,6 +104,7 @@ void gpio::enable_clock()
     else if (_config.port == GPIOC) { RCC->AHB4ENR |= RCC_AHB4ENR_GPIOCEN; }
     else if (_config.port == GPIOD) { RCC->AHB4ENR |= RCC_AHB4ENR_GPIODEN; }
     else if (_config.port == GPIOE) { RCC->AHB4ENR |= RCC_AHB4ENR_GPIOEEN; }
+    else { return; }
     __DSB();
 }
 
