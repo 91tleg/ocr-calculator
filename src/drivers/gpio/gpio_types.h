@@ -20,7 +20,8 @@ enum class gpio_pupd : uint8_t {
 
 enum class gpio_output_type : uint8_t {
     push_pull  = 0U,
-    open_drain = 1U
+    open_drain = 1U,
+    none       = 2U
 };
 
 enum class gpio_speed : uint8_t {
