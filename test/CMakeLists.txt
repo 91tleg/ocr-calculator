@@ -12,11 +12,18 @@ include_directories(
 )
 
 set(BUTTON_SOURCES ${CMAKE_SOURCE_DIR}/../src/modules/button/button.cpp)
+set(CAMERA_SOURCES ${CMAKE_SOURCE_DIR}/../src/modules/camera/camera.cpp)
 
 add_executable(test_button
     ${BUTTON_SOURCES}
     ${GTEST_SOURCES}
     ${CMAKE_SOURCE_DIR}/test_button/test_button.cpp
+)
+
+add_executable(test_camera
+    ${CAMERA_SOURCES}
+    ${GTEST_SOURCES}
+    ${CMAKE_SOURCE_DIR}/test_camera/test_camera.cpp
 )
 
 target_link_libraries(test_button
@@ -27,4 +34,13 @@ target_link_libraries(test_button
     pthread
 )
 
+target_link_libraries(test_camera
+    gtest
+    gmock
+    gtest_main
+    gmock_main
+    pthread
+)
+
 add_test(NAME test_button COMMAND test_button)
+add_test(NAME test_camera COMMAND test_camera)
