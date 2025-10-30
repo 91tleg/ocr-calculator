@@ -13,6 +13,7 @@ include_directories(
 
 set(BUTTON_SOURCES ${CMAKE_SOURCE_DIR}/../src/modules/button/button.cpp)
 set(CAMERA_SOURCES ${CMAKE_SOURCE_DIR}/../src/modules/camera/camera.cpp)
+set(SEGMENTER_SOURCES ${CMAKE_SOURCE_DIR}/../src/modules/segmenter/segmenter.cpp)
 
 add_executable(test_button
     ${BUTTON_SOURCES}
@@ -24,6 +25,12 @@ add_executable(test_camera
     ${CAMERA_SOURCES}
     ${GTEST_SOURCES}
     ${CMAKE_SOURCE_DIR}/test_camera/test_camera.cpp
+)
+
+add_executable(test_segmenter
+    ${SEGMENTER_SOURCES}
+    ${GTEST_SOURCES}
+    ${CMAKE_SOURCE_DIR}/test_segmenter/test_segmenter.cpp
 )
 
 target_link_libraries(test_button
@@ -42,5 +49,14 @@ target_link_libraries(test_camera
     pthread
 )
 
+target_link_libraries(test_segmenter
+    gtest
+    gmock
+    gtest_main
+    gmock_main
+    pthread
+)
+
 add_test(NAME test_button COMMAND test_button)
 add_test(NAME test_camera COMMAND test_camera)
+add_test(NAME test_segmenter COMMAND test_segmenter)
