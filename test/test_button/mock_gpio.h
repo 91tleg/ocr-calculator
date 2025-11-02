@@ -5,9 +5,9 @@
 #include "../src/drivers/gpio/gpio_base.h"
 #include "../src/drivers/gpio/gpio_types.h"
 
-namespace drv {
+namespace test {
 
-class mock_gpio : public gpio_base
+class mock_gpio : public drv::gpio_base
 {
 public:
     MOCK_METHOD(void, init, (), (override));
@@ -16,6 +16,6 @@ public:
     MOCK_METHOD(bool, read, (), (const, override));
 };
 
-} // namespace drv
+} // namespace test
 
 #endif // MOCK_GPIO_H
