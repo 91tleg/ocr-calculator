@@ -2,7 +2,7 @@
 #include "../src/modules/button/button.h"
 #include "mock_gpio.h"
 
-using namespace drv;
+using namespace test;
 
 TEST(ButtonTest, InitCallsGpioInit) {
     mock_gpio gpio;
