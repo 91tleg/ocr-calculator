@@ -1,3 +1,3 @@
 #!/bin/bash
 
-pio run -e genericSTM32H750VB
+pio run -e nucleo_h753zi
