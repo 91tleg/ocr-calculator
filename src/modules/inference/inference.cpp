@@ -1,6 +1,5 @@
 #include "inference.h"
 #include "model.h"
-#include "common/log/log.h"
 
 inference::inference() { setup_interpreter(); }
 
@@ -12,14 +11,14 @@ int8_t inference::predict(const uint8_t *input_image)
 
     TfLiteStatus status = _interpreter->Invoke(); 
     if (status != kTfLiteOk) {
-        sys::log::error("Invoke failed: %d", status);
         return -1;
     }
 
     int8_t max_index = 0;
     float max_score = 0.f;
     for (int8_t i = 0; i < _num_classes; ++i) {
-        float score = _output->data.f[i];
+        float score =
+            static_cast<float>(_output->data.int8[i] - _output->params.zero_point) * _output->params.scale;
         if (score > max_score) {
             max_score = score;
             max_index = i;
@@ -35,14 +34,15 @@ void inference::setup_interpreter()
     _resolver.AddFullyConnected();
     _resolver.AddRelu();
     _resolver.AddSoftmax();
+    _resolver.AddQuantize();
+    _resolver.AddDequantize();
 
     static tflite::MicroInterpreter static_interpreter(
         model, _resolver, _tensor_arena, _tensor_arena_size);
     _interpreter = &static_interpreter;
 
-    TfLiteStatus status = _interpreter->AllocateTensors(); 
-    if (status != kTfLiteOk) {
-        sys::log::error("Tensor allocation failed: %d", status);
+    TfLiteStatus allocate_status = _interpreter->AllocateTensors();
+    if (allocate_status != kTfLiteOk) {
         return;
     }
 
