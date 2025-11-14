@@ -5,7 +5,7 @@ from data_loader import load_mnist_data
 model = tf.keras.models.load_model("model.h5")
 
 (x_train, y_train), _ = load_mnist_data()
-x_train = x_train.astype(np.float32)
+x_train = x_train.astype(np.float32) / 255.0
 
 def representative_dataset():
     for i in range(100):
@@ -24,3 +24,8 @@ with open("model.tflite", "wb") as f:
     f.write(tflite_model)
 
 print("Saved as model.tflite")
+
+# Dump details
+interpreter = tf.lite.Interpreter(model_path="model.tflite")
+interpreter.allocate_tensors()
+print(interpreter.get_tensor_details())
