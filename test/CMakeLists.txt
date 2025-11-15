@@ -41,6 +41,8 @@ file(GLOB_RECURSE TFLM_SOURCES
 )
 
 add_library(tflm STATIC ${TFLM_SOURCES})
+target_compile_definitions(tflm PUBLIC TF_LITE_REMOVE_VIRTUAL_DELETE=)
+target_compile_options(tflm PUBLIC -Wno-macro-redefined)
 
 function(add_native_test TEST_NAME MODULE_PATH)
     add_executable(${TEST_NAME}
@@ -54,7 +56,6 @@ function(add_native_test TEST_NAME MODULE_PATH)
 
     target_link_libraries(${TEST_NAME}
         PRIVATE
-        gtest
         gmock
         gtest_main
         pthread
