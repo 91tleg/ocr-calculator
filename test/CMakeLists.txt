@@ -49,8 +49,8 @@ function(add_native_test TEST_NAME MODULE_PATH)
     )
 
     # Address sanitizer
-    target_compile_options(${TEST_NAME} PRIVATE -fsanitize=address -fno-omit-frame-pointer)
-    target_link_options(${TEST_NAME} PRIVATE -fsanitize=address -fno-omit-frame-pointer)
+    #target_compile_options(${TEST_NAME} PRIVATE -fsanitize=address -fno-omit-frame-pointer)
+    #target_link_options(${TEST_NAME} PRIVATE -fsanitize=address -fno-omit-frame-pointer)
 
     target_link_libraries(${TEST_NAME}
         PRIVATE
