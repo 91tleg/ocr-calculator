@@ -1,7 +1,7 @@
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 
-NUM_CLASSES = 14
+NUM_CLASSES = 10
 
 def create_model(input_shape=(28*28,)):
     model = Sequential([

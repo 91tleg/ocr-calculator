@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow.keras.utils import to_categorical
 
-NUM_CLASSES = 14
+NUM_CLASSES = 10
 
 def load_mnist_data():
     (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
