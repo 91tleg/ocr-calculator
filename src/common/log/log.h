@@ -34,4 +34,16 @@ private:
 
 } // namespace sys
 
+#ifndef NDEBUG
+#define LOG_E(fmt, ...) sys::log::error(fmt, ##__VA_ARGS__)
+#define LOG_W(fmt, ...) sys::log::warn(fmt,  ##__VA_ARGS__)
+#define LOG_I(fmt, ...) sys::log::info(fmt,  ##__VA_ARGS__)
+#define LOG_D(fmt, ...) sys::log::debug(fmt, ##__VA_ARGS__)
+#else
+#define LOG_E(fmt, ...) ( (void)0 )
+#define LOG_W(fmt, ...) ( (void)0 )
+#define LOG_I(fmt, ...) ( (void)0 )
+#define LOG_D(fmt, ...) ( (void)0 )
+#endif // NDEBUG
+
 #endif // LOG_H
