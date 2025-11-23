@@ -1,11 +1,7 @@
-#ifndef STM32H753_OV7670_H
-#define STM32H753_OV7670_H 
+#include "bsp_ov7670.h"
+#include "bsp_gpio.h"
 
-#include "i2c.h"
-#include "drivers/camera/ov7670/ov7670.h"
-#include "drivers/camera/ov7670/ov7670_config.h"
-
-namespace board {
+namespace bsp {
 
 drv::ov7670_config_t ov7670_conf = {
     .reset = ov7670_reset,
@@ -22,8 +18,4 @@ drv::ov7670_config_t ov7670_conf = {
     .d7 = ov7670_d7
 };
 
-drv::ov7670 cam(i2c1, ov7670_conf);
-
-} // namespace board
-
-#endif // STM32H753_OV7670_H
+} // namespace bsp
